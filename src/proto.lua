@@ -5,17 +5,6 @@ License: MIT ( http://www.opensource.org/licenses/mit-license.php )
 Repo: https://github.com/dschnare/Proto-Lua
 ]]--
 
--- Local instance check function.
-local instanceof = function(a, b)
-  if (type(a) == 'table' and type(b) == 'table') then
-    if (type(a.instanceof) == 'function') then
-      return a:instanceof(b)
-    end
-  end
-
-  return false
-end -- instanceof()
-
 return {
   -- Determines if a value is a string.
   isString = function(v) return type(v) == 'string' end,
@@ -84,8 +73,17 @@ return {
 
     return t
   end, -- mixin()
-  -- Determines if a table is an instance of the specified constructor created from constructor.create().
-  instanceof = instanceof,
+  -- Determines if a table is an instance of the specified constructor. The constructor must have been created from 'constructor.create()'.
+  -- It is safe to call this function with any argument types.
+  instanceof = function(a, b)
+    if (type(a) == 'table' and type(b) == 'table') then
+      if (type(a.instanceof) == 'function') then
+        return a:instanceof(b)
+      end
+    end
+
+    return false
+  end -- instanceof(),
   --[[
     The constructor namespace.
   ]]--
