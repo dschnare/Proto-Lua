@@ -2,6 +2,7 @@
 Author: Darren Schnare
 Keywords: lua,prototype,inheritence,constructor,copy,javascript,ecmascript
 License: MIT ( http://www.opensource.org/licenses/mit-license.php )
+Repo: https://github.com/dschnare/Proto-Lua
 ]]--
 
 -- Local instance check function.
