@@ -31,8 +31,9 @@ return {
     of a coorisponding key in 'a' if it exists. If the built-in types don't match then return false
     otherwise returns true.
 
-    In place of 'b' a table with key:value pairs whose values are strings equivalent to the expected built-in type can be used.
-    The '*' string is a special type that will expect the key to at least exist on 'a', but can be of any built-in type.
+    In place of 'b' a table with key:value pairs whose values are strings equivalent to the expected built-in type 
+    can be used. The '*' string is a special type that will expect the key to at least exist on 'a', but can be of 
+    any built-in type.
   ]]--
   adheresTo = function(a, b)
     if (type(a) == 'table' and type(b) == 'table') then
@@ -73,8 +74,8 @@ return {
 
     return t
   end, -- mixin()
-  -- Determines if a table is an instance of the specified constructor. The constructor must have been created from 'constructor.create()'.
-  -- It is safe to call this function with any argument types.
+  -- Determines if a table is an instance of the specified constructor. The constructor must have been 
+  -- created from 'constructor.create()'. It is safe to call this function with any argument types.
   instanceof = function(a, b)
     if (type(a) == 'table' and type(b) == 'table') then
       if (type(a.instanceof) == 'function') then
@@ -89,25 +90,28 @@ return {
   ]]--
   constructor = {
     --[[
-      Creates a new constructor with the specified members and base prototype. If 'base' is a constructor then the constructor's prototype will be used.
-      All key:value pairs in the 'members' table will be added to the constructor's prototype, so the keys on 'members' are prototype properties.
+      Creates a new constructor with the specified members and base prototype. If 'base' is a constructor then the 
+      constructor's prototype will be used. All key:value pairs in the 'members' table will be added to the 
+      constructor's prototype, so the keys on 'members' are prototype properties.
 
       All constructors have the following properties:
-      - prototype   The constructor's prototype table. Any key:value pairs on this table will be available on all instances.
-                    Any new key:value pairs added after instances have been created will be available immediately on all instances.
+      - prototype   The constructor's prototype table. Any key:value pairs on this table will be available on all 
+                    instances. Any new key:value pairs added after instances have been created will be available 
+                    immediately on all instances.
 
       When a constructor is called as a function it will return a new table instance that inherits all properties
       from the constructor's prototype and its base prototype and so on. If an 'init' method exists on the instance
       either from its members or protytpe chain then it will be called with the arguments passed to the constructor.
 
-      If a constructor is called with a single table argument that was created by the constructor being called and the instance
-      being created has a 'copy' method, then the 'copy' method will be called with the other table instance to be copied from. This
-      pattern is the copy-constructor pattern similar to C++.
+      If a constructor is called with a single table argument that was created by the constructor being called and 
+      the instance being created has a 'copy' method, then the 'copy' method will be called with the other table 
+      instance to be copied from. This pattern is the copy-constructor pattern similar to C++.
 
       All instances created from a constructor have at least the following properties:
       - constructor   A reference back to the constructor that created the instance.
-      - instanceof    A method that tests the prototype chain of the instance. When called with a constructor will return true if
-                      the instance has the constructor's prototype in its prototype chain, false otherwise.
+      - instanceof    A method that tests the prototype chain of the instance. When called with a constructor will 
+                      return true if the instance has the constructor's prototype in its prototype chain, 
+                      false otherwise.
 
       create()
       create(members)
