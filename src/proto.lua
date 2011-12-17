@@ -124,6 +124,7 @@ return {
 
       if (type(members) == 'table') then
         if (type(base) == 'table') then
+          -- Setup our prototype to resolve missing properties from our base.
           if (type(base.prototype) == 'table') then
             setmetatable(prototype, {__index = base.prototype})
           else
@@ -133,10 +134,17 @@ return {
           base = nil
         end
 
+        -- Copy all properties from the members table into our prototype.      
         for k,v in pairs(members) do prototype[k] = v end
 
+        -- This is our constructor we are creating. Make sure we give a property that points to our prototype.
         local constructor = {prototype = prototype}
 
+        -- All constructors have an 'instanceof' method.
+        --[[ Example:            
+            local cat = Cat('felix', 'black')
+            print(cat:instanceof(Cat)) // true            
+        --]]
         prototype.instanceof = function(self, other)
           if (type(other) == 'table') then
             if (other == constructor) then return true end
@@ -154,18 +162,23 @@ return {
 
             local other = ...
 
+            -- If a single table is passed in as an argument and its constructor equals our constructor
+            -- and we have a 'copy' method (i.e. copy operation) then this call to our constructor is
+            -- really a 'copy constructor' call. When this occurs we do not call the 'init' method before returning.
             if (select('#', ...) == 1 
                 and type(other) == 'table' 
                 and other.constructor == constructor 
-                and type(instance.copy) == 'function') then
+                and type(instance.copy) == 'function') then              
               instance:copy(other);
               return instance;
             end
 
+            -- If we have an 'init' method then we call it with any of the arguments passed to our constructor.
             if (type(instance.init) == 'function') then
               instance:init(...)
             end
 
+            -- Return the newly created instance.
             return instance;
           end
         })
