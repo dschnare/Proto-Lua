@@ -154,7 +154,10 @@ return {
 
             local other = ...
 
-            if (select('#', ...) == 1 and type(other) == 'table' and other.constructor == constructor and type(instance.copy) == 'function') then
+            if (select('#', ...) == 1 
+                and type(other) == 'table' 
+                and other.constructor == constructor 
+                and type(instance.copy) == 'function') then
               instance:copy(other);
               return instance;
             end
