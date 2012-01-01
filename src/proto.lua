@@ -5,6 +5,26 @@ License: MIT ( http://www.opensource.org/licenses/mit-license.php )
 Repo: https://github.com/dschnare/Proto-Lua
 ]]--
 
+-- Determines if a table instance has a constructor's protoype in its prototype chain.
+-- The constructor is expected to be created from 'constructor.create()'. Safe to call
+-- with any arguments.
+--[[ Example:
+		local cat = Cat('felix', 'black')
+		print(cat:instanceof(Cat)) -- true
+--]]
+local instanceof = function(a, constructor)
+	if (type(a) ~= 'table') then return false end
+	if (type(constructor) ~= 'table' or type(constructor.prototype) ~= 'table') then return false end
+
+	local o = constructor.prototype
+
+	while true do
+		a = a.__proto
+		if (type(a) ~= 'table') then return false end
+		if (rawequal(o, a)) then return true end
+	end
+end -- instanceof()
+
 return {
   -- Determines if a value is a string.
   isString = function(v) return type(v) == 'string' end,
@@ -61,7 +81,7 @@ return {
     mixin(t, t1, t2, ..., tn)
   ]]--
   mixin = function(...)
-    local args = {...}; local t = args[1]
+    local args = {...} local t = args[1]
     if (type(t) ~= 'table') then t = {} end
 
     for i,a in ipairs(args) do
@@ -74,17 +94,10 @@ return {
 
     return t
   end, -- mixin()
-  -- Determines if a table is an instance of the specified constructor. The constructor must have been
-  -- created from 'constructor.create()'. It is safe to call this function with any argument types.
-  instanceof = function(a, b)
-    if (type(a) == 'table' and type(b) == 'table') then
-      if (type(a.instanceof) == 'function') then
-        return a:instanceof(b)
-      end
-    end
-
-    return false
-  end, -- instanceof()
+	-- Determines if a table instance has a constructor's protoype in its prototype chain.
+	-- The constructor is expected to be created from 'constructor.create()'. Safe to call
+	-- with any arguments.
+	instanceof = instanceof,
   --[[
     The constructor namespace.
   ]]--
@@ -117,75 +130,258 @@ return {
       create(members)
       create(base, members)
     ]]--
-    create = function(base, members)
-      local prototype = {instanceof = nil}
+    create = (function()
+			-- Locals for the 'create' function.
 
-      if (type(members) ~= 'table') then members = base end
+			-- Creates a metatable that will look for metamethods in the table instance (i.e. self).
+			-- If no metamethod is found then throws an error.
+			local createMetatable = function(prototype)
+				-- Instantiate the metatable with pre-allocated keys.
+				local m = {
+					__add = nil,
+					__sub = nil,
+					__mul = nil,
+					__div = nil,
+					__mod = nil,
+					__pow = nil,
+					__unm = nil,
+					__concat = nil,
+					__len = nil,
+					__eq = nil,
+					__lt = nil,
+					__le = nil,
+					__index = nil,
+					__newindex = nil,
+					__call = nil
+				}
 
-			if (type(members) ~= 'table') then error('Expected "members" to be a table.') end
+				function m:__add(other)
+					if (type(self.__add) == 'function') then
+						self:__add(other)
+					else
+						error('Table does not have an "add" metamethod.')
+					end
+				end -- __add()
 
-			if (type(base) == 'table') then
-				-- Setup our prototype to resolve missing properties from our base.
-				if (type(base.prototype) == 'table') then
-					setmetatable(prototype, {__index = base.prototype})
-				else
-					setmetatable(prototype, {__index = base})
-				end
-			else
-				base = nil
-			end
+				function m:__sub(other)
+					if (type(self.__sub) == 'function') then
+						self:__sub(other)
+					else
+						error('Table does not have a "sub" metamethod.')
+					end
+				end -- __sub()
 
-			-- Copy all properties from the members table into our prototype.
-			for k,v in pairs(members) do prototype[k] = v end
+				function m:__mul(other)
+					if (type(self.__mul) == 'function') then
+						self:__mul(other)
+					else
+						error('Table does not have a "mul" metamethod.')
+					end
+				end -- __mul()
 
-			-- This is our constructor we are creating. Make sure we give a property that points to our prototype.
-			local constructor = {prototype = prototype}
+				function m:__div(other)
+					if (type(self.__div) == 'function') then
+						self:__div(other)
+					else
+						error('Table does not have a "div" metamethod.')
+					end
+				end -- __div()
 
-			-- All prototypes have an 'instanceof' method.
-			--[[ Example:
-					local cat = Cat('felix', 'black')
-					print(cat:instanceof(Cat)) -- true
-			--]]
-			prototype.instanceof = function(self, other)
-				if (type(other) == 'table') then
-					if (other == constructor) then return true end
-					local b = base
-					if (b and type(b.prototype) == 'table') then b = base.prototype end
-					if (b and type(b.instanceof) == 'function') then return b:instanceof(other) end
-				end
+				function m:__mod(other)
+					if (type(self.__mod) == 'function') then
+						self:__mod(other)
+					else
+						error('Table does not have a "mod" metamethod.')
+					end
+				end -- __mod()
 
-				return false
-			end
+				function m:__pow(other)
+					if (type(self.__pow) == 'function') then
+						self:__pow(other)
+					else
+						error('Table does not have a "pow" metamethod.')
+					end
+				end -- __pow()
 
-			-- Set the metatable for our constructor, making it callable.
-			setmetatable(constructor, {
-				__call = function(self, ...)
-					local instance = setmetatable({constructor = constructor}, {__index = prototype})
+				function m:__unm()
+					if (type(self.__unm) == 'function') then
+						self:__unm()
+					else
+						error('Table does not have an "unm" metamethod.')
+					end
+				end -- __unm()
 
-					local other = ...
+				function m:__concat(other)
+					if (type(self.__concat) == 'function') then
+						self:__concat(other)
+					else
+						error('Table does not have a "concat" metamethod.')
+					end
+				end -- __concat()
 
-					-- If a single table is passed in as an argument and its constructor equals our constructor
-					-- and we have a 'copy' method (i.e. copy operation) then this call to our constructor is
-					-- really a 'copy constructor' call. When this occurs we do not call the 'init' method before returning.
-					if (select('#', ...) == 1
-							and type(other) == 'table'
-							and other.constructor == constructor
-							and type(instance.copy) == 'function') then
-						instance:copy(other);
-						return instance;
+				function m:__len()
+					if (type(self.__len) == 'function') then
+						self:__len()
+					else
+						error('Table does not have a "len" metamethod.')
+					end
+				end -- __len()
+
+				function m:__eq(other)
+					if (type(self.__eq) == 'function') then
+						self:__eq(other)
+					else
+						if type(self) ~= type(other) then  -- different types?
+							return false   -- different objects
+						end
+						return rawequal(self, other)
+					end
+				end -- __eq()
+
+				function m:__lt(other)
+					if (type(self.__lt) == 'function') then
+						self:__lt(other)
+					else
+						error('Table does not have a "lt" metamethod.')
+					end
+				end -- __lt()
+
+				function m:__le(other)
+					if (type(self.__le) == 'function') then
+						self:__le(other)
+					else
+						error('Table does not have a "le" metamethod.')
+					end
+				end -- __le()
+
+				-- Set the 'index' event to a metamethod that will first check
+				-- if the key exists in the prototype chain then fall back to
+				-- an '__index' key in the prototype chain. The '__index' key can be
+				-- a function or a table (see the Lua 5.1 reference for details how this works).
+				function m:__index(key)
+					if (key == '__proto') then return prototype end
+
+					local value = prototype[key]
+
+					if (value ~= nil) then return value end
+
+					local __index = rawget(self, '__index')
+
+					if (__index) then
+						if (type(__index) == 'function') then
+							return __index(self, key)
+						elseif (type(__index) == 'table') then
+							return __index[key]
+						end
+
+						return nil
 					end
 
-					-- If we have an 'init' method then we call it with any of the arguments passed to our constructor.
-					if (type(instance.init) == 'function') then
-						instance:init(...)
+					return value
+				end -- __index()
+
+				function m:__newindex(key, value)
+					if (key == '__proto' and type(value) == 'table' and self ~= value) then
+						prototype = value
+					elseif (type(self.__newindex) == 'function') then
+						self:__newindex(key, value)
+					else
+						rawset(self, key, value)
 					end
+				end -- __newindex()
 
-					-- Return the newly created instance.
-					return instance;
+				function m:__call(...)
+					if (type(self.__call) == 'function') then
+						self:__call(...)
+					else
+						error('Table does not have a "call" metamethod.')
+					end
+				end -- __call()
+
+				return m
+			end -- createMetatable()
+
+			-- Creates a table with a readonly '__proto' key referencing base.
+			local createPrototype = function(base)
+				if (type(base.prototype) == 'table') then base = base.prototype end
+
+				return setmetatable({}, {
+					__index = function(self, key)
+						if (key == '__proto') then return base end
+						return base[key]
+					end,
+
+					__newindex = function(self, key, value)
+						if (key ~= '__proto') then
+							rawset(self, key, value)
+						end
+					end
+				})
+			end -- createPrototype()
+
+			-- The 'create' function.
+			return function(base, members)
+				local prototype = nil
+
+				if (type(members) ~= 'table') then
+					members = base
+					base = nil
 				end
-			})
 
-			return constructor
-    end -- create()
+				if (type(base) ~= 'table') then base = {} end
+
+				-- Create a prototype to resolve missing properties from our base
+				-- and have a readonly '__proto' key referencing the base prototype.
+				-- This reference is for walking the prototype chain.
+				prototype = createPrototype(base)
+
+				-- Copy all properties from the members table into our prototype.
+				if (type(members) == 'table') then
+					for k,v in pairs(members) do prototype[k] = v end
+				end
+
+				-- All prototypes have an 'instanceof' method for convenience.
+				function prototype:instanceof(other)
+					return instanceof(self, other)
+				end
+
+				-- Create a metatable for all instances.
+				local metatable = createMetatable(prototype)
+
+				-- This is our constructor we are creating. Make sure we give a property that points to our prototype.
+				local constructor = {prototype = prototype}
+
+				-- Set the metatable for our constructor, making it callable.
+				setmetatable(constructor, {
+					__call = function(self, ...)
+						local instance = setmetatable({constructor = constructor}, metatable)
+
+						local other = ...
+
+						-- If a single table is passed in as an argument and its constructor equals our constructor
+						-- and we have a 'copy' method (i.e. copy operation) then this call to our constructor is
+						-- really a 'copy constructor' call. When this occurs we do not call the 'init' method before returning.
+						if (select('#', ...) == 1
+								and type(other) == 'table'
+								and other.constructor == constructor
+								and type(instance.copy) == 'function') then
+
+							instance:copy(other)
+							return instance
+						end
+
+						-- If we have an 'init' method then we call it with all of the arguments passed to our constructor.
+						if (type(instance.init) == 'function') then
+							instance:init(...)
+						end
+
+						-- Return the newly created instance.
+						return instance
+					end
+				})
+
+				return constructor
+			end -- create()
+    end)() -- create() closure
   } -- constructor {}
 } -- proto namespace {}

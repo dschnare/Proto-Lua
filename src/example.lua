@@ -1,5 +1,7 @@
 local proto = require('proto')
 
+print(createMetatable)
+
 -- Create a constructor for Animal objects.
 -- Give all animals an initialization method that accepts a name.
 local Animal = proto.constructor.create({
@@ -66,14 +68,15 @@ print('---')
 print('is animal an Animal: ', animal:instanceof(Animal))
 print('is animal a Dog: ', animal:instanceof(Dog))
 print('is animal a Cat: ', animal:instanceof(Cat))
+print('is animal a {}: ', animal:instanceof({}))
 print('---')
-print('is misha an Animal: ', misha:instanceof(Animal))
-print('is misha a Dog: ', misha:instanceof(Dog))
-print('is misha a Cat: ', misha:instanceof(Cat))
+print('is misha an Animal: ', proto.instanceof(misha, Animal))
+print('is misha a Dog: ', proto.instanceof(misha, Dog))
+print('is misha a Cat: ', proto.instanceof(misha, Cat))
 print('---')
-print('is felix an Animal: ', felix:instanceof(Animal))
-print('is felix a Dog: ', felix:instanceof(Dog))
-print('is felix a Cat: ', felix:instanceof(Cat))
+print('is felix an Animal: ', proto.instanceof(felix, Animal))
+print('is felix a Dog: ', proto.instanceof(felix, Dog))
+print('is felix a Cat: ', proto.instanceof(felix, Cat))
 print('---')
 print('misha adheresTo animal: ', proto.adheresTo(misha, animal))
 print('misha adheresTo interface: ', proto.adheresTo(misha, {name='string', getName='function', constructor='*'}))
