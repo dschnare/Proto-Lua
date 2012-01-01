@@ -157,7 +157,7 @@ return {
 
 				function m:__add(other)
 					if (type(self.__add) == 'function') then
-						self:__add(other)
+						return self:__add(other)
 					else
 						error('Table does not have an "add" metamethod.')
 					end
@@ -165,7 +165,7 @@ return {
 
 				function m:__sub(other)
 					if (type(self.__sub) == 'function') then
-						self:__sub(other)
+						return self:__sub(other)
 					else
 						error('Table does not have a "sub" metamethod.')
 					end
@@ -173,7 +173,7 @@ return {
 
 				function m:__mul(other)
 					if (type(self.__mul) == 'function') then
-						self:__mul(other)
+						return self:__mul(other)
 					else
 						error('Table does not have a "mul" metamethod.')
 					end
@@ -181,7 +181,7 @@ return {
 
 				function m:__div(other)
 					if (type(self.__div) == 'function') then
-						self:__div(other)
+						return self:__div(other)
 					else
 						error('Table does not have a "div" metamethod.')
 					end
@@ -189,7 +189,7 @@ return {
 
 				function m:__mod(other)
 					if (type(self.__mod) == 'function') then
-						self:__mod(other)
+						return self:__mod(other)
 					else
 						error('Table does not have a "mod" metamethod.')
 					end
@@ -197,7 +197,7 @@ return {
 
 				function m:__pow(other)
 					if (type(self.__pow) == 'function') then
-						self:__pow(other)
+						return self:__pow(other)
 					else
 						error('Table does not have a "pow" metamethod.')
 					end
@@ -205,7 +205,7 @@ return {
 
 				function m:__unm()
 					if (type(self.__unm) == 'function') then
-						self:__unm()
+						return self:__unm()
 					else
 						error('Table does not have an "unm" metamethod.')
 					end
@@ -213,7 +213,7 @@ return {
 
 				function m:__concat(other)
 					if (type(self.__concat) == 'function') then
-						self:__concat(other)
+						return self:__concat(other)
 					else
 						error('Table does not have a "concat" metamethod.')
 					end
@@ -221,7 +221,7 @@ return {
 
 				function m:__len()
 					if (type(self.__len) == 'function') then
-						self:__len()
+						return self:__len()
 					else
 						error('Table does not have a "len" metamethod.')
 					end
@@ -229,7 +229,7 @@ return {
 
 				function m:__eq(other)
 					if (type(self.__eq) == 'function') then
-						self:__eq(other)
+						return self:__eq(other)
 					else
 						if type(self) ~= type(other) then  -- different types?
 							return false   -- different objects
@@ -240,7 +240,7 @@ return {
 
 				function m:__lt(other)
 					if (type(self.__lt) == 'function') then
-						self:__lt(other)
+						return self:__lt(other)
 					else
 						error('Table does not have a "lt" metamethod.')
 					end
@@ -248,7 +248,7 @@ return {
 
 				function m:__le(other)
 					if (type(self.__le) == 'function') then
-						self:__le(other)
+						return self:__le(other)
 					else
 						error('Table does not have a "le" metamethod.')
 					end
@@ -292,11 +292,25 @@ return {
 
 				function m:__call(...)
 					if (type(self.__call) == 'function') then
-						self:__call(...)
+						return self:__call(...)
 					else
 						error('Table does not have a "call" metamethod.')
 					end
 				end -- __call()
+
+				function m:__tostring()
+					if (type(self.__tostring) == 'function') then
+						return self:__tostring()
+					else
+						local old_tostring = getmetatable(self).__tostring
+						getmetatable(self).__tostring = nil
+						local str = tostring(self)
+						getmetatable(self).__tostring = old_tostring
+						return str
+					end
+				end -- __tostring
+
+				-- __gc
 
 				return m
 			end -- createMetatable()
@@ -364,15 +378,15 @@ return {
 						if (select('#', ...) == 1
 								and type(other) == 'table'
 								and other.constructor == constructor
-								and type(instance.copy) == 'function') then
+								and type(instance.__copy) == 'function') then
 
-							instance:copy(other)
+							instance:__copy(other)
 							return instance
 						end
 
 						-- If we have an 'init' method then we call it with all of the arguments passed to our constructor.
-						if (type(instance.init) == 'function') then
-							instance:init(...)
+						if (type(instance.__init) == 'function') then
+							instance:__init(...)
 						end
 
 						-- Return the newly created instance.

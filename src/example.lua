@@ -5,13 +5,13 @@ print(createMetatable)
 -- Create a constructor for Animal objects.
 -- Give all animals an initialization method that accepts a name.
 local Animal = proto.constructor.create({
-  init = function(self, name)
+  __init = function(self, name)
     self.name = name
   end,
   -- Copy method that facilitates our copy constructor.
   -- Up to us to initialize the instance properly.
   copy = function(self, other)
-    self:init(other:getName())
+    self:__init(other:getName())
   end
 })
 
@@ -27,8 +27,8 @@ local Dog = (function(base)
   -- Create and return the constructor, but override the initialization method
   -- with our own by concatenating ' the dog' to the name.
   return proto.constructor.create(base, {
-    init = function(self, name)
-      base.init(self, name .. ' the dog')
+    __init = function(self, name)
+      base.__init(self, name .. ' the dog')
     end
   })
 
@@ -44,8 +44,8 @@ end)(Animal.prototype)
 -- is a bit smaller to write, but is not as optimal as the approach above for Dog
 -- since we are accessing the prototype and constructor each time we want to call base version of a method.
 local Cat = proto.constructor.create(Animal, {
-  init = function(self, name)
-    Animal.prototype.init(self, name .. ' the cat')
+  __init = function(self, name)
+    Animal.prototype.__init(self, name .. ' the cat')
   end
 })
 
