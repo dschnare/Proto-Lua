@@ -10,7 +10,7 @@
 Proto Lua
 ====================
 
-Proto Lua is a module that implements a prototype technique for object inheritance very similar to that found in JavaScript.
+Proto Lua is an API that performs metatable management to facilitate prototypal design patterns very similar to that found in JavaScript.
 This module can ease the transition from JavaScript to Lua for JavaScript developers. There are also several useful functions
 that help with mixins, testing for interface adherence, type testing and creating constructors.
 
