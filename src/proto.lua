@@ -122,71 +122,70 @@ return {
 
       if (type(members) ~= 'table') then members = base end
 
-      if (type(members) == 'table') then
-        if (type(base) == 'table') then
-          -- Setup our prototype to resolve missing properties from our base.
-          if (type(base.prototype) == 'table') then
-            setmetatable(prototype, {__index = base.prototype})
-          else
-            setmetatable(prototype, {__index = base})
-          end
-        else
-          base = nil
-        end
+			if (type(members) ~= 'table') then error('Expected "members" to be a table.') end
 
-        -- Copy all properties from the members table into our prototype.
-        for k,v in pairs(members) do prototype[k] = v end
+			if (type(base) == 'table') then
+				-- Setup our prototype to resolve missing properties from our base.
+				if (type(base.prototype) == 'table') then
+					setmetatable(prototype, {__index = base.prototype})
+				else
+					setmetatable(prototype, {__index = base})
+				end
+			else
+				base = nil
+			end
 
-        -- This is our constructor we are creating. Make sure we give a property that points to our prototype.
-        local constructor = {prototype = prototype}
+			-- Copy all properties from the members table into our prototype.
+			for k,v in pairs(members) do prototype[k] = v end
 
-        -- All constructors have an 'instanceof' method.
-        --[[ Example:
-            local cat = Cat('felix', 'black')
-            print(cat:instanceof(Cat)) // true
-        --]]
-        prototype.instanceof = function(self, other)
-          if (type(other) == 'table') then
-            if (other == constructor) then return true end
-            local b = base
-            if (b and type(b.prototype) == 'table') then b = base.prototype end
-            if (b and type(b.instanceof) == 'function') then return b:instanceof(other) end
-          end
+			-- This is our constructor we are creating. Make sure we give a property that points to our prototype.
+			local constructor = {prototype = prototype}
 
-          return false
-        end
+			-- All prototypes have an 'instanceof' method.
+			--[[ Example:
+					local cat = Cat('felix', 'black')
+					print(cat:instanceof(Cat)) -- true
+			--]]
+			prototype.instanceof = function(self, other)
+				if (type(other) == 'table') then
+					if (other == constructor) then return true end
+					local b = base
+					if (b and type(b.prototype) == 'table') then b = base.prototype end
+					if (b and type(b.instanceof) == 'function') then return b:instanceof(other) end
+				end
 
-        setmetatable(constructor, {
-          __call = function(self, ...)
-            local instance = setmetatable({constructor = constructor}, {__index = prototype})
+				return false
+			end
 
-            local other = ...
+			-- Set the metatable for our constructor, making it callable.
+			setmetatable(constructor, {
+				__call = function(self, ...)
+					local instance = setmetatable({constructor = constructor}, {__index = prototype})
 
-            -- If a single table is passed in as an argument and its constructor equals our constructor
-            -- and we have a 'copy' method (i.e. copy operation) then this call to our constructor is
-            -- really a 'copy constructor' call. When this occurs we do not call the 'init' method before returning.
-            if (select('#', ...) == 1
-                and type(other) == 'table'
-                and other.constructor == constructor
-                and type(instance.copy) == 'function') then
-              instance:copy(other);
-              return instance;
-            end
+					local other = ...
 
-            -- If we have an 'init' method then we call it with any of the arguments passed to our constructor.
-            if (type(instance.init) == 'function') then
-              instance:init(...)
-            end
+					-- If a single table is passed in as an argument and its constructor equals our constructor
+					-- and we have a 'copy' method (i.e. copy operation) then this call to our constructor is
+					-- really a 'copy constructor' call. When this occurs we do not call the 'init' method before returning.
+					if (select('#', ...) == 1
+							and type(other) == 'table'
+							and other.constructor == constructor
+							and type(instance.copy) == 'function') then
+						instance:copy(other);
+						return instance;
+					end
 
-            -- Return the newly created instance.
-            return instance;
-          end
-        })
+					-- If we have an 'init' method then we call it with any of the arguments passed to our constructor.
+					if (type(instance.init) == 'function') then
+						instance:init(...)
+					end
 
-        return constructor
-      else
-        error('Expected members to be a table.')
-      end
+					-- Return the newly created instance.
+					return instance;
+				end
+			})
+
+			return constructor
     end -- create()
   } -- constructor {}
 } -- proto namespace {}
