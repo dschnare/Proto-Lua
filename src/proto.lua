@@ -98,6 +98,29 @@ return {
 	-- The constructor is expected to be created from 'constructor.create()'. Safe to call
 	-- with any arguments.
 	instanceof = instanceof,
+	-- Promotes all members of an instance's prototype chain to be instance members. Since all members will be at the
+	-- instance level their access is much faster than if they were left deep in the prototype chain.
+	-- A drawback of this is that the instance is now overriding its entire prototype chain which
+	-- means any changes to the chain will not be reflected in the instance. However, new members added
+	-- to the prototype chain will be available immediately as usual. Setting an instance member to 'nil'
+	-- will restore typical prototypal behaviour.
+	promote = function(t)
+		if (type(t) == 'table') then
+			local p = t.__proto
+
+			while (type(p) == 'table') do
+				for k,v in pairs(p) do
+					if (rawget(t, k) == nil) then
+						t[k] = v
+					end
+				end
+
+				p = p.__proto
+			end
+
+			return t
+		end
+	end, -- promote()
   --[[
     The constructor namespace.
   ]]--
@@ -125,6 +148,7 @@ return {
       - instanceof    A method that tests the prototype chain of the instance. When called with a constructor will
                       return true if the instance has the constructor's prototype in its prototype chain,
                       false otherwise.
+			- __proto				A reference to the instance's prototype. This can be modified at runtime.
 
       create()
       create(members)
@@ -311,7 +335,7 @@ return {
 			local createPrototype = function(base)
 				if (type(base.prototype) == 'table') then base = base.prototype end
 
-				return setmetatable({}, {
+				return setmetatable({instanceof = nil}, {
 					__index = function(self, key)
 						if (key == '__proto') then return base end
 						return base[key]

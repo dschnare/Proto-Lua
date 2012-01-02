@@ -10,7 +10,7 @@ local Animal = proto.constructor.create({
   end,
   -- Copy method that facilitates our copy constructor.
   -- Up to us to initialize the instance properly.
-  copy = function(self, other)
+  __copy = function(self, other)
     self:__init(other:getName())
   end
 })
