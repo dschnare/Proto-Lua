@@ -1,7 +1,5 @@
 local proto = require('proto')
 
-print(createMetatable)
-
 -- Create a constructor for Animal objects.
 -- Give all animals an initialization method that accepts a name.
 local Animal = proto.constructor.create({

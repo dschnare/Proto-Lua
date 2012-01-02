@@ -157,93 +157,74 @@ return {
     create = (function()
 			-- Locals for the 'create' function.
 
-			-- Creates a metatable that will look for metamethods in the table instance (i.e. self).
-			-- If no metamethod is found then throws an error.
-			local createMetatable = function(prototype)
-				-- Instantiate the metatable with pre-allocated keys.
-				local m = {
-					__add = nil,
-					__sub = nil,
-					__mul = nil,
-					__div = nil,
-					__mod = nil,
-					__pow = nil,
-					__unm = nil,
-					__concat = nil,
-					__eq = nil,
-					__lt = nil,
-					__le = nil,
-					__index = nil,
-					__newindex = nil,
-					__call = nil,
-					__tostring = nil
-				}
-
-				function m:__add(other)
+			-- The metatable used for ALL instances created with constructors created from this API.
+			-- This saves substantially on memory usage compared to creating a new metatable for each constructor.
+			local metatable = {
+				__add = function(self, other)
 					if (type(self.__add) == 'function') then
 						return self:__add(other)
 					else
 						error('Table does not have an "add" metamethod.')
 					end
-				end -- __add()
+				end,
 
-				function m:__sub(other)
+				__sub = function(self, other)
 					if (type(self.__sub) == 'function') then
 						return self:__sub(other)
 					else
 						error('Table does not have a "sub" metamethod.')
 					end
-				end -- __sub()
+				end,
 
-				function m:__mul(other)
+				__mul = function(self, other)
 					if (type(self.__mul) == 'function') then
 						return self:__mul(other)
 					else
 						error('Table does not have a "mul" metamethod.')
 					end
-				end -- __mul()
+				end,
 
-				function m:__div(other)
+				__div = function(self, other)
 					if (type(self.__div) == 'function') then
 						return self:__div(other)
 					else
 						error('Table does not have a "div" metamethod.')
 					end
-				end -- __div()
+				end,
 
-				function m:__mod(other)
+				__mod = function(self, other)
 					if (type(self.__mod) == 'function') then
 						return self:__mod(other)
 					else
 						error('Table does not have a "mod" metamethod.')
 					end
-				end -- __mod()
+				end,
 
-				function m:__pow(other)
+				__pow = function(self, other)
 					if (type(self.__pow) == 'function') then
 						return self:__pow(other)
 					else
 						error('Table does not have a "pow" metamethod.')
 					end
-				end -- __pow()
+				end,
 
-				function m:__unm()
+				__unm = function(self)
 					if (type(self.__unm) == 'function') then
 						return self:__unm()
 					else
 						error('Table does not have an "unm" metamethod.')
 					end
-				end -- __unm()
+				end,
 
-				function m:__concat(other)
+				__concat = function(self, other)
 					if (type(self.__concat) == 'function') then
 						return self:__concat(other)
 					else
 						error('Table does not have a "concat" metamethod.')
 					end
-				end -- __concat()
+				end,
 
-				function m:__eq(other)
+				__eq = function(self, other)
 					if (type(self.__eq) == 'function') then
 						return self:__eq(other)
 					else
@@ -252,32 +233,30 @@ return {
 						end
 						return rawequal(self, other)
 					end
-				end -- __eq()
+				end,
 
-				function m:__lt(other)
+				__lt = function(self, other)
 					if (type(self.__lt) == 'function') then
 						return self:__lt(other)
 					else
 						error('Table does not have a "lt" metamethod.')
 					end
-				end -- __lt()
+				end,
 
-				function m:__le(other)
+				__le = function(self, other)
 					if (type(self.__le) == 'function') then
 						return self:__le(other)
 					else
 						error('Table does not have a "le" metamethod.')
 					end
-				end -- __le()
+				end,
 
-				-- Set the 'index' event to a metamethod that will first check
-				-- if the key exists in the prototype chain then fall back to
-				-- an '__index' key in the prototype chain. The '__index' key can be
-				-- a function or a table (see the Lua 5.1 reference for details how this works).
-				function m:__index(key)
-					if (key == '__proto') then return prototype end
+				__index = function(self, key)
+					local value = nil
 
-					local value = prototype[key]
+					if (type(self.__proto) == 'table') then
+						value = self.__proto[key]
+					end
 
 					if (value ~= nil) then return value end
 
@@ -289,47 +268,41 @@ return {
 						elseif (type(__index) == 'table') then
 							return __index[key]
 						end
-
-						return nil
 					end
 
 					return value
-				end -- __index()
+				end,
 
-				function m:__newindex(key, value)
-					if (key == '__proto' and type(value) == 'table' and self ~= value) then
-						prototype = value
-					elseif (type(self.__newindex) == 'function') then
+				__newindex = function(self, key, value)
+					if (type(self.__newindex) == 'function') then
 						self:__newindex(key, value)
 					else
 						rawset(self, key, value)
 					end
-				end -- __newindex()
+				end,
 
-				function m:__call(...)
+				__call = function(self, ...)
 					if (type(self.__call) == 'function') then
 						return self:__call(...)
 					else
 						error('Table does not have a "call" metamethod.')
 					end
-				end -- __call()
+				end,
 
-				function m:__tostring()
-					if (type(self.__tostring) == 'function') then
-						return self:__tostring()
-					else
-						local old_tostring = getmetatable(self).__tostring
-						getmetatable(self).__tostring = nil
-						local str = tostring(self)
-						getmetatable(self).__tostring = old_tostring
-						return str
-					end
-				end -- __tostring
+				__tostring = nil
+			}
 
-				-- __gc
-
-				return m
-			end -- createMetatable()
+			function metatable:__tostring()
+				if (type(self.__tostring) == 'function') then
+					return self:__tostring()
+				else
+					local old_tostring = metatable.__tostring
+					metatable.__tostring = nil
+					local str = tostring(self)
+					metatable.__tostring = old_tostring
+					return str
+				end
+			end
 
 			-- Creates a table with a readonly '__proto' key referencing base.
 			local createPrototype = function(base)
@@ -370,13 +343,14 @@ return {
 					for k,v in pairs(members) do prototype[k] = v end
 				end
 
+				-- Nil out the members and base table
+				members = nil
+				base = nil
+
 				-- All prototypes have an 'instanceof' method for convenience.
 				function prototype:instanceof(other)
 					return instanceof(self, other)
 				end
-
-				-- Create a metatable for all instances.
-				local metatable = createMetatable(prototype)
 
 				-- This is our constructor we are creating. Make sure we give a property that points to our prototype.
 				local constructor = {prototype = prototype}
@@ -384,7 +358,7 @@ return {
 				-- Set the metatable for our constructor, making it callable.
 				setmetatable(constructor, {
 					__call = function(self, ...)
-						local instance = setmetatable({constructor = constructor}, metatable)
+						local instance = setmetatable({constructor = constructor, __proto = prototype}, metatable)
 
 						local other = ...
 
