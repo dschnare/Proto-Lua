@@ -13,15 +13,17 @@ Repo: https://github.com/dschnare/Proto-Lua
 		print(cat:instanceof(Cat)) -- true
 --]]
 local instanceof = function(a, constructor)
-	if (type(a) ~= 'table') then return false end
-	if (type(constructor) ~= 'table' or type(constructor.prototype) ~= 'table') then return false end
+	local _type, _rawequal = type, rawequal
+
+	if (_type(a) ~= 'table') then return false end
+	if (_type(constructor) ~= 'table' or _type(constructor.prototype) ~= 'table') then return false end
 
 	local o = constructor.prototype
 
 	while true do
 		a = a.__proto
-		if (type(a) ~= 'table') then return false end
-		if (rawequal(o, a)) then return true end
+		if (_type(a) ~= 'table') then return false end
+		if (_rawequal(o, a)) then return true end
 	end
 end -- instanceof()
 
@@ -56,16 +58,18 @@ return {
     any built-in type.
   ]]--
   adheresTo = function(a, b)
-    if (type(a) == 'table' and type(b) == 'table') then
-      for k,v in pairs(b) do
-        if (v == '*' and type(a[k]) ~= 'nil') then return true end
+		local _type = type
 
-        if (type(v) == type(a[k]) or type(v) == a[k]) then return true end
+    if (_type(a) == 'table' and _type(b) == 'table') then
+      for k,v in pairs(b) do
+        if (v == '*' and _type(a[k]) ~= 'nil') then return true end
+
+        if (_type(v) == _type(a[k]) or _type(v) == a[k]) then return true end
       end
 
       return false
     else
-      return type(a) == type(b)
+      return _type(a) == _type(b)
     end
   end, -- adheresTo()
   --[[
@@ -81,12 +85,16 @@ return {
     mixin(t, t1, t2, ..., tn)
   ]]--
   mixin = function(...)
-    local args = {...} local t = args[1]
-    if (type(t) ~= 'table') then t = {} end
+    local args, _type, a = {...}, type, nil
+		local t = args[1]
 
-    for i,a in ipairs(args) do
+    if (_type(t) ~= 'table') then t = {} end
+
+    for i=1,#args do
       if (i ~= 1) then
-        if (type(a) == 'table') then
+				a = args[i]
+
+        if (_type(a) == 'table') then
           for k,v in pairs(a) do t[k] = v end
         end
       end
@@ -105,12 +113,14 @@ return {
 	-- to the prototype chain will be available immediately as usual. Setting an instance member to 'nil'
 	-- will restore typical prototypal behaviour.
 	promote = function(t)
-		if (type(t) == 'table') then
+		local _type, _rawget = type, rawget
+
+		if (_type(t) == 'table') then
 			local p = t.__proto
 
-			while (type(p) == 'table') do
+			while (_type(p) == 'table') do
 				for k,v in pairs(p) do
-					if (rawget(t, k) == nil) then
+					if (_rawget(t, k) == nil) then
 						t[k] = v
 					end
 				end
