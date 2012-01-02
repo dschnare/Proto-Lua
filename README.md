@@ -31,3 +31,5 @@ To run the example change to the `src/` directory and run Lua with `example.lua`
     pushd src
     lua5.1 example.lua
     popd
+
+**See the Wiki for an [overview](Home).**
