@@ -73,7 +73,7 @@ return {
     end
   end, -- adheresTo()
   --[[
-    Copies all key:value paris of each table passed to the function into the first table of the argument list.
+    Copies all key:value pairs of each table passed to the function into the first table of the argument list.
 
     If the first argument is not a valid table then one will be created. Existing key:value pairs on the table
     will be overwritten.
