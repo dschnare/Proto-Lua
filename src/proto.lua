@@ -146,13 +146,13 @@ return {
 					__pow = nil,
 					__unm = nil,
 					__concat = nil,
-					__len = nil,
 					__eq = nil,
 					__lt = nil,
 					__le = nil,
 					__index = nil,
 					__newindex = nil,
-					__call = nil
+					__call = nil,
+					__tostring = nil
 				}
 
 				function m:__add(other)
@@ -218,14 +218,6 @@ return {
 						error('Table does not have a "concat" metamethod.')
 					end
 				end -- __concat()
-
-				function m:__len()
-					if (type(self.__len) == 'function') then
-						return self:__len()
-					else
-						error('Table does not have a "len" metamethod.')
-					end
-				end -- __len()
 
 				function m:__eq(other)
 					if (type(self.__eq) == 'function') then
