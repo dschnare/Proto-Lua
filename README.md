@@ -32,4 +32,4 @@ To run the example change to the `src/` directory and run Lua with `example.lua`
     lua5.1 example.lua
     popd
 
-**See the Wiki for an [overview](wiki).**
+**See the [Wiki](Proto-Lua/wiki) for an overview.**
