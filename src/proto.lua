@@ -161,91 +161,114 @@ return {
 			-- This saves substantially on memory usage compared to creating a new metatable for each constructor.
 			local metatable = {
 				__add = function(self, other)
-					if (type(self.__add) == 'function') then
-						return self:__add(other)
+					local __add = self.__add
+
+					if (type(__add) == 'function') then
+						return __add(self, other)
 					else
 						error('Table does not have an "add" metamethod.')
 					end
 				end,
 
 				__sub = function(self, other)
-					if (type(self.__sub) == 'function') then
-						return self:__sub(other)
+					local __sub = self.__sub
+
+					if (type(__sub) == 'function') then
+						return __sub(self, other)
 					else
 						error('Table does not have a "sub" metamethod.')
 					end
 				end,
 
 				__mul = function(self, other)
-					if (type(self.__mul) == 'function') then
-						return self:__mul(other)
+					local __mul = self.__mul
+
+					if (type(__mul) == 'function') then
+						return __mul(self, other)
 					else
 						error('Table does not have a "mul" metamethod.')
 					end
 				end,
 
 				__div = function(self, other)
-					if (type(self.__div) == 'function') then
-						return self:__div(other)
+					local __div = self.__div
+
+					if (type(__div) == 'function') then
+						return __div(self, other)
 					else
 						error('Table does not have a "div" metamethod.')
 					end
 				end,
 
 				__mod = function(self, other)
-					if (type(self.__mod) == 'function') then
-						return self:__mod(other)
+					local __mod = self.__mod
+
+					if (type(__mod) == 'function') then
+						return __mod(self, other)
 					else
 						error('Table does not have a "mod" metamethod.')
 					end
 				end,
 
 				__pow = function(self, other)
-					if (type(self.__pow) == 'function') then
-						return self:__pow(other)
+					local __pow = self.__pow
+
+					if (type(__pow) == 'function') then
+						return __pow(self, other)
 					else
 						error('Table does not have a "pow" metamethod.')
 					end
 				end,
 
 				__unm = function(self)
-					if (type(self.__unm) == 'function') then
-						return self:__unm()
+					local __unm = self.__unm
+
+					if (type(__unm) == 'function') then
+						return __unm(self)
 					else
 						error('Table does not have an "unm" metamethod.')
 					end
 				end,
 
 				__concat = function(self, other)
-					if (type(self.__concat) == 'function') then
-						return self:__concat(other)
+					local __concat = self.__concat
+
+					if (type(__concat) == 'function') then
+						return __concat(self, other)
 					else
 						error('Table does not have a "concat" metamethod.')
 					end
 				end,
 
 				__eq = function(self, other)
-					if (type(self.__eq) == 'function') then
-						return self:__eq(other)
+					local __eq = self.__eq
+
+					if (type(__eq) == 'function') then
+						return __eq(self, other)
 					else
 						if type(self) ~= type(other) then  -- different types?
 							return false   -- different objects
 						end
+
 						return rawequal(self, other)
 					end
 				end,
 
 				__lt = function(self, other)
-					if (type(self.__lt) == 'function') then
-						return self:__lt(other)
+					local __lt = self.__lt
+
+					if (type(__lt) == 'function') then
+						return __lt(self, other)
 					else
 						error('Table does not have a "lt" metamethod.')
 					end
 				end,
 
 				__le = function(self, other)
-					if (type(self.__le) == 'function') then
-						return self:__le(other)
+					local __le = self.__le
+
+					if (type(__le) == 'function') then
+						return __le(self, other)
 					else
 						error('Table does not have a "le" metamethod.')
 					end
@@ -253,9 +276,10 @@ return {
 
 				__index = function(self, key)
 					local value = nil
+					local __proto = self.__proto
 
-					if (type(self.__proto) == 'table') then
-						value = self.__proto[key]
+					if (type(__proto) == 'table') then
+						value = __proto[key]
 					end
 
 					if (value ~= nil) then return value end
@@ -274,16 +298,20 @@ return {
 				end,
 
 				__newindex = function(self, key, value)
-					if (type(self.__newindex) == 'function') then
-						self:__newindex(key, value)
+					local __newindex = self.__newindex
+
+					if (type(__newindex) == 'function') then
+						__newindex(self, key, value)
 					else
 						rawset(self, key, value)
 					end
 				end,
 
 				__call = function(self, ...)
-					if (type(self.__call) == 'function') then
-						return self:__call(...)
+					local __call = self.__call
+
+					if (type(__call) == 'function') then
+						return __call(self, ...)
 					else
 						error('Table does not have a "call" metamethod.')
 					end
@@ -293,13 +321,15 @@ return {
 			}
 
 			function metatable:__tostring()
-				if (type(self.__tostring) == 'function') then
-					return self:__tostring()
+				local __tostring = self.__tostring
+
+				if (type(__tostring) == 'function') then
+					return __tostring(self)
 				else
-					local old_tostring = metatable.__tostring
+					__tostring = metatable.__tostring
 					metatable.__tostring = nil
 					local str = tostring(self)
-					metatable.__tostring = old_tostring
+					metatable.__tostring = __tostring
 					return str
 				end
 			end
