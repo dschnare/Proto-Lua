@@ -294,6 +294,9 @@ return {
 					if (value ~= nil) then return value end
 
 					local __index = rawget(self, '__index')
+					if (__index ~= true and type(__proto) == 'table') then
+						__index = __proto.__index
+					end
 
 					if (__index) then
 						if (type(__index) == 'function') then
