@@ -111,15 +111,15 @@ return {
 	-- A drawback of this is that the instance is now overriding its entire prototype chain which
 	-- means any changes to the chain will not be reflected in the instance. However, new members added
 	-- to the prototype chain will be available immediately as usual. Setting an instance member to 'nil'
-	-- will restore typical prototypal behaviour.
+	-- will restore typical prototypal behaviour. Returns the table passed in.
 	promote = function(t)
-		local _type, _rawget = type, rawget
+		local _type, _rawget, _pairs = type, rawget, pairs
 
 		if (_type(t) == 'table') then
 			local p = t.__proto
 
 			while (_type(p) == 'table') do
-				for k,v in pairs(p) do
+				for k,v in _pairs(p) do
 					if (_rawget(t, k) == nil) then
 						t[k] = v
 					end
@@ -127,9 +127,9 @@ return {
 
 				p = p.__proto
 			end
-
-			return t
 		end
+
+		return t
 	end, -- promote()
   --[[
     The constructor namespace.
