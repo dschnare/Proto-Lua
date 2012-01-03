@@ -392,9 +392,7 @@ return {
 				base = nil
 
 				-- All prototypes have an 'instanceof' method for convenience.
-				function prototype:instanceof(other)
-					return instanceof(self, other)
-				end
+				prototype.instanceof = instanceof
 
 				-- This is our constructor we are creating. Make sure we give a property that points to our prototype.
 				local constructor = {prototype = prototype}
@@ -407,18 +405,19 @@ return {
 						local other = ...
 
 						-- If a single table is passed in as an argument and its constructor equals our constructor
-						-- and we have a 'copy' method (i.e. copy operation) then this call to our constructor is
-						-- really a 'copy constructor' call. When this occurs we do not call the 'init' method before returning.
+						-- and we have a '__copy' method (i.e. copy operation) then this call to our constructor is
+						-- really a 'copy constructor' call. When this occurs we do not call the '__init' method before returning.
 						if (select('#', ...) == 1
 								and type(other) == 'table'
 								and other.constructor == constructor
+								and other.__proto = constructor.prototype
 								and type(instance.__copy) == 'function') then
 
 							instance:__copy(other)
 							return instance
 						end
 
-						-- If we have an 'init' method then we call it with all of the arguments passed to our constructor.
+						-- If we have an '__init' method then we call it with all of the arguments passed to our constructor.
 						if (type(instance.__init) == 'function') then
 							instance:__init(...)
 						end
