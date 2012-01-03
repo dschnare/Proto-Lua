@@ -59,6 +59,7 @@ local misha = Dog('misha')
 local felix = Cat('felix')
 
 print('temp == animal: ', temp == animal)
+print('temp\'s name is: ', temp:getName())
 print('animal\'s name is: ', animal:getName())
 print('misha\'s name is: ', misha:getName())
 print('felix\'s name is: ', felix:getName())

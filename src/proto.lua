@@ -410,7 +410,7 @@ return {
 						if (select('#', ...) == 1
 								and type(other) == 'table'
 								and other.constructor == constructor
-								and other.__proto = constructor.prototype
+								and other.__proto == constructor.prototype
 								and type(instance.__copy) == 'function') then
 
 							instance:__copy(other)
