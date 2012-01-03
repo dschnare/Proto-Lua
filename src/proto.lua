@@ -285,8 +285,7 @@ return {
 				end,
 
 				__index = function(self, key)
-					local value = nil
-					local __proto = self.__proto
+					local value, __proto = nil, self.__proto
 
 					if (type(__proto) == 'table') then
 						value = __proto[key]
@@ -308,6 +307,8 @@ return {
 				end,
 
 				__newindex = function(self, key, value)
+					local __proto = self.__proto
+
 					local __newindex = self.__newindex
 
 					if (type(__newindex) == 'function') then
