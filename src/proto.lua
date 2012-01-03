@@ -86,7 +86,7 @@ return {
   ]]--
   mixin = function(...)
     local args, _type, a = {...}, type, nil
-		local t = args[1]
+		local t, _pairs = args[1], pairs
 
     if (_type(t) ~= 'table') then t = {} end
 
@@ -95,7 +95,7 @@ return {
 				a = args[i]
 
         if (_type(a) == 'table') then
-          for k,v in pairs(a) do t[k] = v end
+          for k,v in _pairs(a) do t[k] = v end
         end
       end
     end
