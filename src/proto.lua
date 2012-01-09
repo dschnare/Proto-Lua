@@ -113,7 +113,7 @@ return {
 	-- to the prototype chain will be available immediately as usual. Setting an instance member to 'nil'
 	-- will restore typical prototypal behaviour. Returns the table passed in.
 	promote = function(t)
-		local _type, _rawget, _pairs = type, rawget, pairs
+		local _type, _rawget, _rawset, _pairs = type, rawget, rawset, pairs
 
 		if (_type(t) == 'table') then
 			local p = t.__proto
@@ -121,7 +121,7 @@ return {
 			while (_type(p) == 'table') do
 				for k,v in _pairs(p) do
 					if (_rawget(t, k) == nil) then
-						t[k] = v
+						_rawset(t, k, v)
 					end
 				end
 
@@ -135,7 +135,7 @@ return {
 	-- will perform the exact opposite of promote() (i.e. set all instance members to nil that exist
 	-- on the prototype chain). Returns the table instance passed in.
 	demote = function(t)
-		local _type, _rawget, _pairs, p = type, rawget, pairs, nil
+		local _type, _rawget, _rawset, _pairs, p = type, rawget, rawset, pairs, nil
 
 		if (_type(t) == 'table') then
 			p = t.__proto
@@ -143,7 +143,7 @@ return {
 			if (_type(p) == 'table') then
 				for k,v in _pairs(t) do
 					if (p[k] == _rawget(t, k)) then
-						t[k] = nil
+						_rawset(t, k, nil)
 					end
 				end
 			end
