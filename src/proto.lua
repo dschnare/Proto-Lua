@@ -411,12 +411,11 @@ return {
 
 				-- This is our constructor we are creating. Make sure we give a property that points to our prototype.
 				local constructor = {prototype = prototype}
-				prototype.constructor = constructor
 
 				-- Set the metatable for our constructor, making it callable.
 				setmetatable(constructor, {
 					__call = function(self, ...)
-						local instance = setmetatable({__proto = prototype}, metatable)
+						local instance = setmetatable({constructor = constructor, __proto = prototype}, metatable)
 
 						local other = ...
 
