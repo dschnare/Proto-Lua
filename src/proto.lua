@@ -131,6 +131,26 @@ return {
 
 		return t
 	end, -- promote()
+	-- Demotes all instance level members that exist on the instance's prototype chain. This function
+	-- will perform the exact opposite of promote() (i.e. set all instance members to nil that exist
+	-- on the prototype chain). Returns the table instance passed in.
+	demote = function(t)
+		local _type, _rawget, _pairs, p = type, rawget, pairs, nil
+
+		if (_type(t) == 'table') then
+			p = t.__proto
+
+			if (_type(p) == 'table') then
+				for k,v in _pairs(t) do
+					if (p[k] == _rawget(t, k)) then
+						t[k] = nil
+					end
+				end
+			end
+		end
+
+		return t
+	end, -- demote()
   --[[
     The constructor namespace.
   ]]--
@@ -348,11 +368,16 @@ return {
 				end
 			end
 
-			-- Creates a table with a readonly '__proto' key referencing base.
-			local createPrototype = function(base)
+			-- Initializes a table with a readonly '__proto' key referencing base and ensures
+			-- prototype is a valid table.
+			local initPrototype = function(prototype, base)
+				if (type(prototype) ~= 'table') then prototype = {} end
 				if (type(base.prototype) == 'table') then base = base.prototype end
 
-				return setmetatable({instanceof = nil}, {
+				-- All prototypes have an 'instanceof' method for convenience.
+				prototype.instanceof = instanceof
+
+				return setmetatable(prototype, {
 					__index = function(self, key)
 						if (key == '__proto') then return base end
 						return base[key]
@@ -364,7 +389,7 @@ return {
 						end
 					end
 				})
-			end -- createPrototype()
+			end -- initPrototype()
 
 			-- The 'create' function.
 			return function(base, members)
@@ -377,22 +402,12 @@ return {
 
 				if (type(base) ~= 'table') then base = {} end
 
-				-- Create a prototype to resolve missing properties from our base
-				-- and have a readonly '__proto' key referencing the base prototype.
-				-- This reference is for walking the prototype chain.
-				prototype = createPrototype(base)
-
-				-- Copy all properties from the members table into our prototype.
-				if (type(members) == 'table') then
-					for k,v in pairs(members) do prototype[k] = v end
-				end
+				-- Initialize the members as our constructor's prototype.
+				prototype = initPrototype(members, base)
 
 				-- Nil out the members and base table
 				members = nil
 				base = nil
-
-				-- All prototypes have an 'instanceof' method for convenience.
-				prototype.instanceof = instanceof
 
 				-- This is our constructor we are creating. Make sure we give a property that points to our prototype.
 				local constructor = {prototype = prototype}
