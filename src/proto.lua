@@ -187,6 +187,9 @@ return {
     create = (function()
 			-- Locals for the 'create' function.
 
+			-- The default base prototype for all constructors that don't have a base prototype.
+			local defaultBase = {}
+
 			-- The metatable used for ALL instances created with constructors created from this API.
 			-- This saves substantially on memory usage compared to creating a new metatable for each constructor.
 			local metatable = {
@@ -400,7 +403,7 @@ return {
 					base = nil
 				end
 
-				if (type(base) ~= 'table') then base = {} end
+				if (type(base) ~= 'table') then base = defaultBase end
 
 				-- Initialize the members as our constructor's prototype.
 				prototype = initPrototype(members, base)
